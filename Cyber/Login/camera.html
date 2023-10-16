@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capturar Imagem da Webcam</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  video {
+    border: 1px solid #ccc;
+  }
+  .button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  .button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  input[type="file"] {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  #capturedImage {
+    max-width: 100%; /* Limitar largura da imagem */
+    max-height: 80vh; /* Limitar altura da imagem */
+  }
+</style>
+</head>
+<body>
+<div>
+  <h2>Capturar Imagem</h2>
+  <video id="webcam" autoplay style="display: none;"></video>
+  <br>
+  <button class="button" id="startButton">Iniciar Webcam</button>
+  <button class="button" id="stopButton">Parar Webcam</button>
+  <button class="button" id="captureButton" disabled>Capturar Imagem</button>
+  <button class="button" id="saveButton" disabled>Salvar Imagem</button>
+  <input class="button" type="file" accept="image/*" id="fileInput">
+  <canvas id="canvas" style="display: none;"></canvas>
+  <img id="capturedImage" style="display: none;">
+</div>
+
+<script>
+const video = document.getElementById('webcam');
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const captureButton = document.getElementById('captureButton');
+const saveButton = document.getElementById('saveButton');
+const fileInput = document.getElementById('fileInput');
+const canvas = document.getElementById('canvas');
+const capturedImage = document.getElementById('capturedImage');
+let stream = null;
+
+// Iniciar a webcam
+startButton.addEventListener('click', () => {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(mediaStream => {
+      stream = mediaStream;
+      video.srcObject = mediaStream;
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      captureButton.disabled = false;
+      video.style.display = 'block'; // Mostrar a tag video
+    })
+    .catch(error => {
+      console.error('Erro ao acessar a webcam:', error);
+    });
+});
+
+// Parar a webcam
+stopButton.addEventListener('click', () => {
+  if (stream) {
+    const tracks = stream.getTracks();
+    tracks.forEach(track => track.stop());
+    video.srcObject = null;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    captureButton.disabled = true;
+    saveButton.disabled = true;
+    video.style.display = 'none'; // Ocultar a tag video
+  }
+});
+
+// Capturar imagem da webcam quando o botão é clicado
+captureButton.addEventListener('click', () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  capturedImage.src = canvas.toDataURL('image/png');
+  capturedImage.style.display = 'block';
+  canvas.style.display = 'none';
+  saveButton.disabled = false;
+});
+
+// Salvar imagem no computador
+saveButton.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.href = capturedImage.src;
+  link.download = 'captured_image.png';
+  link.click();
+});
+  
+// Carregar imagem do arquivo quando selecionado
+fileInput.addEventListener('change', () => {
+  const selectedFile = fileInput.files[0];
+  if (selectedFile) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      capturedImage.src = event.target.result;
+      capturedImage.style.display = 'block';
+      saveButton.disabled = false;
+    };
+    reader.readAsDataURL(selectedFile);
+  }
+});
+</script>
+</body>
+</html>

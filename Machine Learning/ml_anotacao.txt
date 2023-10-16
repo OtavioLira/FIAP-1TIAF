@@ -1,0 +1,9 @@
+multiplas variaveis = celular, prever comportamento
+Reduzir dimensioes, dados estruturados, colunas
+
+Os componentes principais são sensiveis a escala de medicao, padronizar as variaveis
+antes de aplicar PCA
+
+Aplicar o PCA para seu conjunto de dados perde o seu sentido
+
+Se a interpretação dos resultados é importante para a sua análise, não use o PCA
